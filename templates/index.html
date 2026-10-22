@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFlow - Gerenciador de Tarefas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        header {
+            background: #1d4ed8;
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .painel, .tarefa {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px #0000000d;
+        }
+
+        input, textarea, select {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px;
+            box-sizing: border-box;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 3px;
+        }
+
+        .excluir { background: #dc2626; }
+        .concluida { text-decoration: line-through; color: #64748b; }
+        a { color: #1d4ed8; margin-right: 12px; }
+        .mensagem { background: #dcfce7; padding: 10px; border-radius: 6px; }
+        .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>TechFlow</h1>
+        <p>Gerenciador de Tarefas</p>
+        <span>Organize suas tarefas e acompanhe seu progresso.</span>
+    </header>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensagem in mensagens %}
+            <p class="mensagem">{{ mensagem }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <section class="painel">
+        <h2>Adicionar tarefa</h2>
+        <form action="{{ url_for('create_task') }}" method="post">
+            <label for="title">Título da tarefa *</label>
+            <input id="title" name="title" required maxlength="120"
+                   placeholder="Ex.: Estudar Python">
+
+            <label for="description">Descrição</label>
+            <textarea id="description" name="description" rows="3"
+                      placeholder="Detalhes da tarefa"></textarea>
+
+            <label for="priority">Prioridade</label>
+            <select id="priority" name="priority">
+                <option>Baixa</option>
+                <option selected>Média</option>
+                <option>Alta</option>
+            </select>
+
+            <button type="submit">Adicionar tarefa</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Minhas tarefas</h2>
+        <p>
+            <a href="{{ url_for('index', status='all') }}">Todas</a>
+            <a href="{{ url_for('index', status='pending') }}">Pendentes</a>
+            <a href="{{ url_for('index', status='completed') }}">Concluídas</a>
+        </p>
+
+        {% for tarefa in tasks %}
+            <article class="tarefa">
+                <h3 class="{{ 'concluida' if tarefa.completed else '' }}">
+                    {{ tarefa.title }}
+                </h3>
+
+                {% if tarefa.description %}
+                    <p>{{ tarefa.description }}</p>
+                {% endif %}
+
+                <p>Prioridade: <strong>{{ tarefa.priority }}</strong></p>
+                <p>Estado: {{ 'Concluída' if tarefa.completed else 'Pendente' }}</p>
+
+                <div class="acoes">
+                    <form action="{{ url_for('toggle_task', task_id=tarefa.id) }}"
+                          method="post">
+                        <button type="submit">
+                            {{ 'Reabrir' if tarefa.completed else 'Concluir' }}
+                        </button>
+                    </form>
+
+                    <form action="{{ url_for('delete_task', task_id=tarefa.id) }}"
+                          method="post"
+                          onsubmit="return confirm('Deseja excluir esta tarefa?')">
+                        <button class="excluir" type="submit">Excluir</button>
+                    </form>
+                </div>
+            </article>
+        {% else %}
+            <div class="painel">
+                <p>Nenhuma tarefa encontrada. Adicione sua primeira tarefa!</p>
+            </div>
+        {% endfor %}
+    </section>
+
+    <footer>
+        <p>TechFlow Solutions — Projeto acadêmico</p>
+    </footer>
+</body>
+</html>
