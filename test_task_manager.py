@@ -100,8 +100,38 @@ def test_alternar_tarefa_concluida_para_pendente(tmp_path):
     assert manager.list_tasks("pending")[0]["title"] == "Estudar Python"
 
 
+
 def test_impedir_prioridade_invalida(tmp_path):
     manager = TaskManager(tmp_path / "tasks.json")
 
     with pytest.raises(ValueError):
         manager.add_task("Estudar Python", priority="Urgente")
+
+
+def test_filtrar_tarefas_concluidas(tmp_path):
+    manager = TaskManager(tmp_path / "tasks.json")
+
+    tarefa = manager.add_task("Tarefa concluída")
+    manager.add_task("Tarefa pendente")
+    manager.toggle_task(tarefa["id"])
+
+    concluidas = manager.list_tasks("completed")
+
+    assert len(concluidas) == 1
+    assert concluidas[0]["title"] == "Tarefa concluída"
+
+
+def test_buscar_tarefa_inexistente(tmp_path):
+    manager = TaskManager(tmp_path / "tasks.json")
+
+    with pytest.raises(KeyError):
+        manager.update_task(999, "Nova tarefa")
+
+
+def test_arquivo_json_corrompido(tmp_path):
+    arquivo = tmp_path / "tasks.json"
+    arquivo.write_text("{json inválido", encoding="utf-8")
+
+    manager = TaskManager(arquivo)
+
+    assert manager.list_tasks() == []
