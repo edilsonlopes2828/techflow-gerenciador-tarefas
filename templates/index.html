@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechFlow - Gerenciador de Tarefas</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -51,13 +52,56 @@
             margin: 3px;
         }
 
-        .excluir { background: #dc2626; }
-        .concluida { text-decoration: line-through; color: #64748b; }
-        a { color: #1d4ed8; margin-right: 12px; }
-        .mensagem { background: #dcfce7; padding: 10px; border-radius: 6px; }
-        .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .excluir {
+            background: #dc2626;
+        }
+
+        .concluida {
+            text-decoration: line-through;
+            color: #64748b;
+        }
+
+        a {
+            color: #1d4ed8;
+            margin-right: 12px;
+        }
+
+        .mensagem {
+            background: #dcfce7;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .acoes {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        details {
+            margin-top: 12px;
+        }
+
+        summary {
+            color: #1d4ed8;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .form-edicao {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
     </style>
 </head>
+
 <body>
     <header>
         <h1>TechFlow</h1>
@@ -73,6 +117,7 @@
 
     <section class="painel">
         <h2>Adicionar tarefa</h2>
+
         <form action="{{ url_for('create_task') }}" method="post">
             <label for="title">Título da tarefa *</label>
             <input id="title" name="title" required maxlength="120"
@@ -84,9 +129,9 @@
 
             <label for="priority">Prioridade</label>
             <select id="priority" name="priority">
-                <option>Baixa</option>
-                <option selected>Média</option>
-                <option>Alta</option>
+                <option value="Baixa">Baixa</option>
+                <option value="Média" selected>Média</option>
+                <option value="Alta">Alta</option>
             </select>
 
             <button type="submit">Adicionar tarefa</button>
@@ -95,6 +140,7 @@
 
     <section>
         <h2>Minhas tarefas</h2>
+
         <p>
             <a href="{{ url_for('index', status='all') }}">Todas</a>
             <a href="{{ url_for('index', status='pending') }}">Pendentes</a>
@@ -111,8 +157,15 @@
                     <p>{{ tarefa.description }}</p>
                 {% endif %}
 
-                <p>Prioridade: <strong>{{ tarefa.priority }}</strong></p>
-                <p>Estado: {{ 'Concluída' if tarefa.completed else 'Pendente' }}</p>
+                <p>
+                    Prioridade:
+                    <strong>{{ tarefa.priority }}</strong>
+                </p>
+
+                <p>
+                    Estado:
+                    {{ 'Concluída' if tarefa.completed else 'Pendente' }}
+                </p>
 
                 <div class="acoes">
                     <form action="{{ url_for('toggle_task', task_id=tarefa.id) }}"
@@ -125,9 +178,54 @@
                     <form action="{{ url_for('delete_task', task_id=tarefa.id) }}"
                           method="post"
                           onsubmit="return confirm('Deseja excluir esta tarefa?')">
-                        <button class="excluir" type="submit">Excluir</button>
+                        <button class="excluir" type="submit">
+                            Excluir
+                        </button>
                     </form>
                 </div>
+
+                <details>
+                    <summary>Editar tarefa</summary>
+
+                    <form class="form-edicao"
+                          action="{{ url_for('edit_task', task_id=tarefa.id) }}"
+                          method="post">
+
+                        <label for="title-{{ tarefa.id }}">Título *</label>
+                        <input id="title-{{ tarefa.id }}"
+                               name="title"
+                               value="{{ tarefa.title }}"
+                               maxlength="120"
+                               required>
+
+                        <label for="description-{{ tarefa.id }}">
+                            Descrição
+                        </label>
+                        <textarea id="description-{{ tarefa.id }}"
+                                  name="description"
+                                  rows="3">{{ tarefa.description }}</textarea>
+
+                        <label for="priority-{{ tarefa.id }}">
+                            Prioridade
+                        </label>
+                        <select id="priority-{{ tarefa.id }}" name="priority">
+                            <option value="Baixa"
+                                {% if tarefa.priority == 'Baixa' %}selected{% endif %}>
+                                Baixa
+                            </option>
+                            <option value="Média"
+                                {% if tarefa.priority == 'Média' %}selected{% endif %}>
+                                Média
+                            </option>
+                            <option value="Alta"
+                                {% if tarefa.priority == 'Alta' %}selected{% endif %}>
+                                Alta
+                            </option>
+                        </select>
+
+                        <button type="submit">Salvar alterações</button>
+                    </form>
+                </details>
             </article>
         {% else %}
             <div class="painel">

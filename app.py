@@ -29,6 +29,21 @@ def create_task():
     return redirect(url_for("index"))
 
 
+@app.post("/tasks/<int:task_id>/edit")
+def edit_task(task_id):
+    title = request.form.get("title", "")
+    description = request.form.get("description", "")
+    priority = request.form.get("priority", "Média")
+
+    try:
+        manager.update_task(task_id, title, description, priority)
+        flash("Tarefa atualizada com sucesso!", "success")
+    except (ValueError, KeyError) as error:
+        flash(str(error), "error")
+
+    return redirect(url_for("index"))
+
+
 @app.post("/tasks/<int:task_id>/toggle")
 def toggle_task(task_id):
     try:
@@ -43,6 +58,7 @@ def toggle_task(task_id):
 def delete_task(task_id):
     try:
         manager.delete_task(task_id)
+        flash("Tarefa excluída com sucesso!", "success")
     except KeyError:
         flash("Tarefa não encontrada.", "error")
 

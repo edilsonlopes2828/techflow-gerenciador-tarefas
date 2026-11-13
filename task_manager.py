@@ -72,6 +72,23 @@ class TaskManager:
 
         raise KeyError("Tarefa não encontrada.")
 
+    def update_task(self, task_id, title, description="", priority="Média"):
+        task = self._find(task_id)
+        title = title.strip()
+
+        if not title:
+            raise ValueError("O título é obrigatório.")
+
+        if priority not in self.PRIORITIES:
+            raise ValueError("Prioridade inválida.")
+
+        task["title"] = title
+        task["description"] = description.strip()
+        task["priority"] = priority
+
+        self._save()
+        return task.copy()
+
     def toggle_task(self, task_id):
         task = self._find(task_id)
         task["completed"] = not task["completed"]
