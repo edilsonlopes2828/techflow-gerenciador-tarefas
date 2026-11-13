@@ -76,3 +76,32 @@ def test_edicao_salva_no_arquivo(tmp_path):
     novo_manager = TaskManager(arquivo)
 
     assert novo_manager.list_tasks()[0]["title"] == "Tarefa modificada"
+
+def test_filtrar_tarefas_pendentes(tmp_path):
+    manager = TaskManager(tmp_path / "tasks.json")
+
+    manager.add_task("Tarefa pendente")
+    tarefa = manager.add_task("Tarefa concluída")
+    manager.toggle_task(tarefa["id"])
+
+    pendentes = manager.list_tasks("pending")
+
+    assert len(pendentes) == 1
+    assert pendentes[0]["title"] == "Tarefa pendente"
+
+
+def test_alternar_tarefa_concluida_para_pendente(tmp_path):
+    manager = TaskManager(tmp_path / "tasks.json")
+    tarefa = manager.add_task("Estudar Python")
+
+    manager.toggle_task(tarefa["id"])
+    manager.toggle_task(tarefa["id"])
+
+    assert manager.list_tasks("pending")[0]["title"] == "Estudar Python"
+
+
+def test_impedir_prioridade_invalida(tmp_path):
+    manager = TaskManager(tmp_path / "tasks.json")
+
+    with pytest.raises(ValueError):
+        manager.add_task("Estudar Python", priority="Urgente")
